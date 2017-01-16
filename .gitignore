@@ -1,0 +1,5 @@
+/IdentityServer/src/AuthServerDemo/bin/*
+/IdentityServer/src/AuthServerDemo/obj/*
+/IdentityServer/src/AuthServerDemo/Properties/*
+/IdentityServer/.vs/*
+*.user
