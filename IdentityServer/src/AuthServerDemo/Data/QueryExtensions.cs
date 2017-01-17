@@ -47,7 +47,7 @@ namespace AuthServerDemo.Data
         }
 
 
-        public static Func<KeyValuePair<int, ApplicationUser>, bool> GetUserWithRoleRestrictionsQueryDictionary(ClaimsPrincipal user, string email)
+        public static Func<ApplicationUser, bool> GetUserWithRoleRestrictionsQueryDictionary(ClaimsPrincipal user, string email)
         {
             if (string.IsNullOrWhiteSpace(email))
             {
@@ -63,7 +63,7 @@ namespace AuthServerDemo.Data
             return GetUserByEmailWithRoleRestrictionsQueryDictionary(user, email);
         }
 
-        public static Func<KeyValuePair<int, ApplicationUser>, bool> GetUserByEmailWithRoleRestrictionsQueryDictionary(ClaimsPrincipal user, string email)
+        public static Func<ApplicationUser, bool> GetUserByEmailWithRoleRestrictionsQueryDictionary(ClaimsPrincipal user, string email)
         {
             if (string.IsNullOrWhiteSpace(email))
             {
@@ -78,9 +78,9 @@ namespace AuthServerDemo.Data
             throw new InvalidOperationException("Invalid user permissions");
         }
 
-        public static Func<KeyValuePair<int, ApplicationUser>, bool> GetUserByEmailQueryDictionary(string email)
+        public static Func<ApplicationUser, bool> GetUserByEmailQueryDictionary(string email)
         {
-            return q => q.Value.Email == email;
+            return q => q.Email == email;
         }
     }
 }

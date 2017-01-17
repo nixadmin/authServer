@@ -32,16 +32,16 @@ namespace AuthServerDemo.Controllers
             try
             {
                 //var users = userManager.Users.AsQueryable().Where(ApplicationUserQueries.GetUserWithRoleRestrictionsQuery(User, email)
-                var users = inMemoryUsers.GetUsersByExpression(ApplicationUserQueries.GetUserWithRoleRestrictionsQueryDictionary(User, email));
-                return Ok(from item in users
-                          select new
-                          {
-                              Email = item.Email,
-                              FirstName = item.FirstName,
-                              LastName = item.LastName,
-                              Address = item.Address,
-                              IsAdmin = item.IsAdmin
-                          });
+                // var users = inMemoryUsers.GetUsersByExpression(ApplicationUserQueries.GetUserWithRoleRestrictionsQueryDictionary(User, email));
+                var user = inMemoryUsers.FindByUsername(email);
+                return Ok(new
+                            {
+                                Email = user.Email,
+                                FirstName = user.FirstName,
+                                LastName = user.LastName,
+                                Address = user.Address,
+                                IsAdmin = user.IsAdmin
+                            });
             }
             catch (InvalidOperationException)
             {
@@ -68,7 +68,7 @@ namespace AuthServerDemo.Controllers
                 
                 if (result.Succeeded)
                 {
-                    inMemoryUsers.Users.TryAdd(user.Id, user);
+                    inMemoryUsers.Users.Add(user);
                     return Ok(model);
                 }
             }
