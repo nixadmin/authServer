@@ -25,7 +25,7 @@ namespace AuthServerDemo.Controllers
             inMemoryUsers = inMemoryStore;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet]
         public IActionResult Get(string email)
         {
@@ -49,6 +49,7 @@ namespace AuthServerDemo.Controllers
             }
         }
 
+        [Authorize(Roles.Admin)]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody]UserRegisterModel model)
         {
@@ -68,7 +69,8 @@ namespace AuthServerDemo.Controllers
                 
                 if (result.Succeeded)
                 {
-                    inMemoryUsers.Users.TryAdd(user.Id, user);
+                    var createdUser = userManager.Users.First(q => q.UserName == user.UserName);
+                    inMemoryUsers.Users.TryAdd(createdUser.Id, createdUser);
                     return Ok(model);
                 }
             }
@@ -76,7 +78,7 @@ namespace AuthServerDemo.Controllers
             return BadRequest(ModelState);
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPut]
         public async Task<IActionResult> Update(string email, [FromBody]UserProfileModel model)
         {
@@ -108,7 +110,7 @@ namespace AuthServerDemo.Controllers
             return BadRequest(ModelState);
         }
 
-        //[Authorize(Roles.Admin)]
+        [Authorize(Roles.Admin)]
         [HttpDelete]
         public async Task<IActionResult> Delete(string email)
         {
