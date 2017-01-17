@@ -70,7 +70,7 @@ namespace AuthServerDemo.Controllers
                 if (result.Succeeded)
                 {
                     var createdUser = userManager.Users.First(q => q.UserName == user.UserName);
-                    inMemoryUsers.Users..Add(createdUser);
+                    inMemoryUsers.Users.Add(createdUser);
                     return Ok(model);
                 }
             }
