@@ -8,6 +8,7 @@ using System.Linq;
 using AuthServerDemo.Configuration;
 using AuthServerDemo.Data;
 using System;
+using AuthServerDemo.Data.Stores;
 
 namespace AuthServerDemo.Controllers
 {
@@ -16,19 +17,23 @@ namespace AuthServerDemo.Controllers
     public class UserProfileController : Controller
     {
         private readonly UserManager<ApplicationUser> userManager;
+        private readonly IInMemoryApplicationUserStore inMemoryUsers;
 
-        public UserProfileController(UserManager<ApplicationUser> identityUserManager)
+        public UserProfileController(UserManager<ApplicationUser> identityUserManager, IInMemoryApplicationUserStore inMemoryStore)
         {
             userManager = identityUserManager;
+            inMemoryUsers = inMemoryStore;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet]
         public IActionResult Get(string email)
         {
             try
             {
-                return Ok(from item in userManager.Users.Where(ApplicationUserQueries.GetUserWithRoleRestrictionsQuery(User, email))
+                //var users = userManager.Users.AsQueryable().Where(ApplicationUserQueries.GetUserWithRoleRestrictionsQuery(User, email)
+                var users = inMemoryUsers.GetUsersByExpression(ApplicationUserQueries.GetUserWithRoleRestrictionsQueryDictionary(User, email));
+                return Ok(from item in users
                           select new
                           {
                               Email = item.Email,
@@ -60,9 +65,10 @@ namespace AuthServerDemo.Controllers
                     };
 
                 var result = await userManager.CreateAsync(user, model.Password);
-
+                
                 if (result.Succeeded)
                 {
+                    inMemoryUsers.Users.TryAdd(user.Id, user);
                     return Ok(model);
                 }
             }
@@ -70,13 +76,13 @@ namespace AuthServerDemo.Controllers
             return BadRequest(ModelState);
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPut]
         public async Task<IActionResult> Update(string email, [FromBody]UserProfileModel model)
         {
             if (ModelState.IsValid && !string.IsNullOrWhiteSpace(email))
             {
-                var user = userManager.Users.FirstOrDefault(ApplicationUserQueries.GetUserByEmailWithRoleRestrictionsQuery(User, email));
+                var user = userManager.Users.AsQueryable().FirstOrDefault(ApplicationUserQueries.GetUserByEmailWithRoleRestrictionsQuery(User, email));
 
                 if (user != null)
                 {
@@ -95,14 +101,14 @@ namespace AuthServerDemo.Controllers
                             Address = user.Address,
                             IsAdmin = user.IsAdmin
                         });
-                    }                   
+                    }                
                 }
             }
 
             return BadRequest(ModelState);
         }
 
-        [Authorize(Roles.Admin)]
+        //[Authorize(Roles.Admin)]
         [HttpDelete]
         public async Task<IActionResult> Delete(string email)
         {

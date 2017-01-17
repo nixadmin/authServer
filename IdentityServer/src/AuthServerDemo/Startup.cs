@@ -18,6 +18,7 @@ using System.IdentityModel.Tokens.Jwt;
 using AuthServerDemo.Configuration.Settings;
 using IdentityModel;
 using IdentityServer4;
+using IdentityServer4.Validation;
 
 namespace AuthServerDemo
 {
@@ -39,7 +40,7 @@ namespace AuthServerDemo
         public void ConfigureServices(IServiceCollection services)
         {
             var connectionString = Configuration.GetConnectionString(Configuration.GetDatabaseConnectionStringName());
-            var migrationAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+            // var migrationAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
             services.AddIdentity<ApplicationUser, ApplicationRole>()
                 .AddEntityFrameworkStores<AuthorizationServerDbContext, int>()
@@ -62,11 +63,14 @@ namespace AuthServerDemo
 
             services.AddMvc();
 
-            services.AddTransient<IProfileService, IdentityProfileService>();
+            //services.AddTransient<IProfileService, IdentityProfileService>();
+            services.AddTransient<IProfileService, InMemoryUsersProfileService>();
+            services.AddTransient<IResourceOwnerPasswordValidator, InMemoryUsersPasswordValidator>();
 
             services.AddIdentityServer()
                 .AddTemporarySigningCredential()
 
+                .AddInMemoryPersistedGrants()
                 .AddInMemoryIdentityResources(FakeDataConfig.GetIdentityResources())
                 .AddInMemoryApiResources(FakeDataConfig.GetApiResources())
                 .AddInMemoryClients(FakeDataConfig.GetClients())
@@ -79,8 +83,11 @@ namespace AuthServerDemo
                 //    builder.UseNpgsql(connectionString, options =>
                 //        options.MigrationsAssembly(migrationAssembly)))
 
-                .AddAspNetIdentity<ApplicationUser>()
-                .AddProfileService<IdentityProfileService>();
+                .ManageApplicationUsers();
+               // .AddTestUsers(FakeDataConfig.GetUsers());
+                
+                //.AddAspNetIdentity<ApplicationUser>()
+                //.AddProfileService<IdentityProfileService>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -99,6 +106,8 @@ namespace AuthServerDemo
 
             app.UseIdentity();
             app.UseIdentityServer();
+
+            //app.InitializeInMemoryStore();
 
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {

@@ -41,6 +41,25 @@ namespace AuthServerDemo.Initialization
             };
         }
 
+        public static List<TestUser> GetUsers()
+        {
+            return new List<TestUser>
+            {
+                new TestUser
+                {
+                    SubjectId = "1",
+                    Username = "admin@mail.com",
+                    Password = "qweQWE123!"
+                },
+                new TestUser
+                {
+                    SubjectId = "2",
+                    Username = "user@mail.com",
+                    Password = "qweQWE123!"
+                }
+            };
+        }
+
         public static IEnumerable<Client> GetClients()
         {
             return new List<Client>
