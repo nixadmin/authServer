@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 
 namespace AuthServerDemo
 {
@@ -10,10 +11,14 @@ namespace AuthServerDemo
         {
             Console.Title = "Auth server (Identity4)";
 
+            var configuration = new ConfigurationBuilder()
+                .AddCommandLine(args)
+                .Build();
+
             var host = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls("http://localhost:5000")
                 .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseConfiguration(configuration)
                 .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
