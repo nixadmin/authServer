@@ -29,7 +29,7 @@ namespace AuthServerDemo.Data.Repository
 
         private RedisConnection connection;
 
-        public ApplicationUserRedisRepository(RedisConnection redisCconnection, UserManager<ApplicationUser> identityUserSotore)
+        public ApplicationUserRedisRepository(RedisConnection redisCconnection)
         {
             connection = redisCconnection;
         }
