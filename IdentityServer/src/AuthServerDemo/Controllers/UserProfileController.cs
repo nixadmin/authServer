@@ -25,7 +25,7 @@ namespace AuthServerDemo.Controllers
             inMemoryUsers = inMemoryStore;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet]
         public IActionResult Get(string email)
         {
@@ -54,7 +54,7 @@ namespace AuthServerDemo.Controllers
             }
         }
 
-        //[Authorize(Roles.Admin)]
+        [Authorize(Roles.Admin)]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody]UserRegisterModel model)
         {
@@ -83,7 +83,7 @@ namespace AuthServerDemo.Controllers
             return BadRequest(ModelState);
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPut]
         public async Task<IActionResult> Update(string email, [FromBody]UserProfileModel model)
         {
@@ -115,7 +115,7 @@ namespace AuthServerDemo.Controllers
             return BadRequest(ModelState);
         }
 
-        //[Authorize(Roles.Admin)]
+        [Authorize(Roles.Admin)]
         [HttpDelete]
         public async Task<IActionResult> Delete(string email)
         {
