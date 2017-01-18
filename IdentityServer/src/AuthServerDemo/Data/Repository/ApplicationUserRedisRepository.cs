@@ -32,8 +32,6 @@ namespace AuthServerDemo.Data.Repository
         public ApplicationUserRedisRepository(RedisConnection redisCconnection, UserManager<ApplicationUser> identityUserSotore)
         {
             connection = redisCconnection;
-
-            this.AddRangeAsync(identityUserSotore.Users).Wait();
         }
 
         public async Task AddAsync(ApplicationUser user)
