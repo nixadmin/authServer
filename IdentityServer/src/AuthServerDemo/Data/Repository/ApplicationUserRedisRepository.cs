@@ -2,18 +2,23 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using System;
+using System.Threading.Tasks;
 
 namespace AuthServerDemo.Data.Repository
 {
     public interface IApplicationUserRepository
     {
-        void Add(ApplicationUser user);
+        Task AddAsync(ApplicationUser user);
 
-        void AddRange(IEnumerable<ApplicationUser> users);
+        Task AddRangeAsync(IEnumerable<ApplicationUser> users);
 
-        ApplicationUser GetById(int id);
+        Task UpdateAsync(ApplicationUser user);
 
-        ApplicationUser GetByUserName(string userName);
+        Task DeleteAsync(ApplicationUser user);
+
+        Task<ApplicationUser> GetByIdAsync(int id);
+
+        Task<ApplicationUser> GetByUserNameAsync(string userName);
     }
 
     public class ApplicationUserRedisRepository : IApplicationUserRepository
@@ -28,30 +33,57 @@ namespace AuthServerDemo.Data.Repository
             connection = redisCconnection;
         }
 
-        public void Add(ApplicationUser user)
+        public async Task AddAsync(ApplicationUser user)
         {
             var serializedUser = JsonConvert.SerializeObject(user);
 
-            connection.Database.StringSet(KEY_ID_SUFFIX + user.Id.ToString(), serializedUser);
-            connection.Database.StringSet(KEY_NAME_SUFFIX + user.UserName.ToUpper(), serializedUser);
+            await connection.Database.StringSetAsync(KEY_ID_SUFFIX + user.Id.ToString(), serializedUser);
+            await connection.Database.StringSetAsync(KEY_NAME_SUFFIX + user.UserName.ToUpper(), serializedUser);
         }
 
-        public void AddRange(IEnumerable<ApplicationUser> users)
+        public async Task AddRangeAsync(IEnumerable<ApplicationUser> users)
         {
             foreach (ApplicationUser user in users)
             {
-                this.Add(user);
+                await this.AddAsync(user);
             }
         }
 
-        public ApplicationUser GetById(int id)
+        public async Task UpdateAsync(ApplicationUser user)
         {
-            return JsonConvert.DeserializeObject<ApplicationUser>(connection.Database.StringGet(KEY_ID_SUFFIX + id.ToString()));
+            await this.AddAsync(user); // Add will just replace the key with new value, it's the same action as update
         }
 
-        public ApplicationUser GetByUserName(string userName)
+        public async Task DeleteAsync(ApplicationUser user)
         {
-            return JsonConvert.DeserializeObject<ApplicationUser>(connection.Database.StringGet(KEY_NAME_SUFFIX + userName.ToUpper()));
+            await connection.Database.KeyDeleteAsync(KEY_ID_SUFFIX + user.Id.ToString());
+            await connection.Database.KeyDeleteAsync(KEY_NAME_SUFFIX + user.UserName.ToUpper());
+        }
+
+        public async Task<ApplicationUser> GetByIdAsync(int id)
+        {
+            ApplicationUser result = null;
+
+            var value = await connection.Database.StringGetAsync(KEY_ID_SUFFIX + id.ToString());
+            if (value.HasValue)
+            {
+                result = JsonConvert.DeserializeObject<ApplicationUser>(value);
+            }
+
+            return result;
+        }
+
+        public async Task<ApplicationUser> GetByUserNameAsync(string userName)
+        {
+            ApplicationUser result = null;
+
+            var value = await connection.Database.StringGetAsync(KEY_NAME_SUFFIX + userName.ToUpper());
+            if (value.HasValue)
+            {
+                result = JsonConvert.DeserializeObject<ApplicationUser>(value);
+            }
+
+            return result;
         }
     }
 }
