@@ -18,7 +18,7 @@ namespace AuthServerDemo.Services
         {
             if (await users.ValidateCredentialsAsync(context.UserName, context.Password))
             {
-                var user = users.FindByUsername(context.UserName);
+                var user = users.FindByUsernameAsync(context.UserName);
                 context.Result = new GrantValidationResult(user.Id.ToString(), OidcConstants.AuthenticationMethods.Password);
             }
         }

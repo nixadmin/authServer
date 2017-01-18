@@ -22,11 +22,11 @@ namespace AuthServerDemo.Services
             this.users = usersStore;
         }
 
-        public Task GetProfileDataAsync(ProfileDataRequestContext context)
+        public async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
             if (context.RequestedClaimTypes.Any())
             {
-                var user = GetUserBySubject(context.Subject);
+                var user = await GetUserBySubjectAsync(context.Subject);
 
                 var claims = new List<Claim>();
 
@@ -46,21 +46,17 @@ namespace AuthServerDemo.Services
 
                 context.IssuedClaims = claims;
             }
-
-            return Task.FromResult(0);
         }
 
-        public Task IsActiveAsync(IsActiveContext context)
+        public async Task IsActiveAsync(IsActiveContext context)
         {
-            var user = GetUserBySubject(context.Subject);
+            var user = await GetUserBySubjectAsync(context.Subject);
             context.IsActive = user != null;
-
-            return Task.FromResult(0);
         }
 
-        private ApplicationUser GetUserBySubject(ClaimsPrincipal sub)
+        private async Task<ApplicationUser> GetUserBySubjectAsync(ClaimsPrincipal sub)
         {
-            return users.FindById(int.Parse(sub.GetSubjectId()));
+            return await users.FindByIdAsync(int.Parse(sub.GetSubjectId()));
         }
     }
 }

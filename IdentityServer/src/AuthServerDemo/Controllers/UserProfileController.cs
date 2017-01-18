@@ -27,7 +27,7 @@ namespace AuthServerDemo.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult Get(string email)
+        public async Task<IActionResult> Get(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
             {
@@ -38,7 +38,7 @@ namespace AuthServerDemo.Controllers
             {
                 //var users = userManager.Users.AsQueryable().Where(ApplicationUserQueries.GetUserWithRoleRestrictionsQuery(User, email)
                 // var users = inMemoryUsers.GetUsersByExpression(ApplicationUserQueries.GetUserWithRoleRestrictionsQueryDictionary(User, email));
-                var user = inMemoryUsers.FindByUsername(email);
+                var user = await inMemoryUsers.FindByUsernameAsync(email);
                 return Ok(new
                             {
                                 Email = user.Email,
@@ -75,7 +75,7 @@ namespace AuthServerDemo.Controllers
                 if (result.Succeeded)
                 {
                     var createdUser = userManager.Users.First(q => q.UserName == user.UserName);
-                    inMemoryUsers.UsersRepository.Add(createdUser);
+                    await inMemoryUsers.UsersRepository.AddAsync(createdUser);
                     return Ok(model);
                 }
             }
@@ -101,6 +101,8 @@ namespace AuthServerDemo.Controllers
 
                     if (result.Succeeded)
                     {
+                        await inMemoryUsers.UsersRepository.UpdateAsync(user);
+
                         return Ok(new {
                             Email = user.Email,
                             FirstName = user.FirstName,
@@ -129,6 +131,8 @@ namespace AuthServerDemo.Controllers
 
                     if (result.Succeeded)
                     {
+                        await inMemoryUsers.UsersRepository.DeleteAsync(user);
+
                         return Ok();
                     }
                 }

@@ -11,9 +11,9 @@ namespace AuthServerDemo.Data.Stores
 
         Task<bool> ValidateCredentialsAsync(string username, string password);
 
-        ApplicationUser FindByUsername(string username);
+        Task<ApplicationUser> FindByUsernameAsync(string username);
 
-        ApplicationUser FindById(int id);
+        Task<ApplicationUser> FindByIdAsync(int id);
     }
 
     public class ApplicationUserStore : IApplicationUserStore
@@ -22,17 +22,15 @@ namespace AuthServerDemo.Data.Stores
 
         public IApplicationUserRepository UsersRepository { get; private set; }
 
-        public ApplicationUserStore(UserManager<ApplicationUser> identityUserSotore, IPasswordHasher<ApplicationUser> passwordHasher, IApplicationUserRepository repo)
+        public ApplicationUserStore(IPasswordHasher<ApplicationUser> passwordHasher, IApplicationUserRepository repo)
         {
             this.UsersRepository = repo;
-            this.UsersRepository.AddRange(identityUserSotore.Users);
-
             this.PasswordHasher = passwordHasher;            
         }
 
         public async Task<bool> ValidateCredentialsAsync(string userName, string password)
         {
-            var user = FindByUsername(userName);
+            var user = await FindByUsernameAsync(userName);
             if (user != null)
             {
                 var verificationResult = this.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
@@ -42,14 +40,14 @@ namespace AuthServerDemo.Data.Stores
             return false;
         }
 
-        public ApplicationUser FindByUsername(string userName)
+        public async Task<ApplicationUser> FindByUsernameAsync(string userName)
         {
-            return UsersRepository.GetByUserName(userName);
+            return await UsersRepository.GetByUserNameAsync(userName);
         }
 
-        public ApplicationUser FindById(int id)
+        public async Task<ApplicationUser> FindByIdAsync(int id)
         {
-            return UsersRepository.GetById(id);
+            return await UsersRepository.GetByIdAsync(id);
         }
     }    
 }

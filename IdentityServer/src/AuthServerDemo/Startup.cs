@@ -112,6 +112,8 @@ namespace AuthServerDemo
         {
             loggerFactory.AddConsole();
 
+            app.CopyUsersFromDatabaseToRedis();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
