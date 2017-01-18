@@ -9,13 +9,17 @@ namespace AuthServerDemo.Data.Repository
 {
     public interface IGrantRepository
     {
-        void Add(PersistedGrant token);
+        Task AddAsync(PersistedGrant token);
 
-        void AddRange(IEnumerable<PersistedGrant> tokens);
+        Task AddRangeAsync(IEnumerable<PersistedGrant> tokens);
 
-        PersistedGrant GetByKey(string key);
+        Task RemoveAsync(string subjectId, string clientId, string type);
 
-        IEnumerable<PersistedGrant> GetBySubject(string subject);
+        Task RemoveAsync(string key);
+
+        Task<PersistedGrant> GetByKeyAsync(string key);
+
+        Task<IEnumerable<PersistedGrant>> GetBySubjectAsync(string subject);
     }
 
     public class GrantRedisRepository : IGrantRepository
@@ -30,31 +34,76 @@ namespace AuthServerDemo.Data.Repository
             connection = redisCconnection;
         }
 
-        public void Add(PersistedGrant token)
+        public async Task AddAsync(PersistedGrant token)
         {
-            var serToken = JsonConvert.SerializeObject(token);
-
-            connection.Database.StringSet(TOKEN + token.Key, serToken);
-            connection.Database.StringSet(SUBJECT + token.SubjectId, serToken);
+            await connection.Database.StringSetAsync(TOKEN + token.Key, JsonConvert.SerializeObject(token));
+            await AddSubject(token);
         }
 
-        public void AddRange(IEnumerable<PersistedGrant> tokens)
+        private async Task AddSubject(PersistedGrant token)
+        {
+            var tokensWithSubject = (await GetBySubjectAsync(token.SubjectId)).ToList();
+            tokensWithSubject.Add(token);
+
+            var serTokens = JsonConvert.SerializeObject(tokensWithSubject);
+            await connection.Database.StringSetAsync(SUBJECT + token.SubjectId, serTokens);
+        }
+
+        public async Task AddRangeAsync(IEnumerable<PersistedGrant> tokens)
         {
             foreach (PersistedGrant token in tokens)
             {
-                this.Add(token);
+                await this.AddAsync(token);
             }
         }
 
-        public PersistedGrant GetByKey(string key)
+        public async Task RemoveAsync(string key)
         {
-            return JsonConvert.DeserializeObject<PersistedGrant>(connection.Database.StringGet(TOKEN + key));
+            await connection.Database.KeyDeleteAsync(TOKEN + key);
         }
 
-        public IEnumerable<PersistedGrant> GetBySubject(string subject)
+        public async Task RemoveAsync(string subjectId, string clientId, string type)
         {
-            // should return enumerable of records insted of one, compilation goint to fail. Need to fix it
-            return JsonConvert.DeserializeObject<PersistedGrant>(connection.Database.StringGet(SUBJECT + subject));
+            var allSubjects = await GetBySubjectAsync(subjectId);
+            var subjectsToRemove = allSubjects.Where(x => x.SubjectId == subjectId && x.ClientId == clientId);
+            if (type != null)
+            {
+                allSubjects = allSubjects.Where(x => x.Type == type);
+            }
+
+            foreach (PersistedGrant grant in subjectsToRemove)
+            {
+                await connection.Database.KeyDeleteAsync(TOKEN + grant.Key);
+            }
+
+            var serTokens = JsonConvert.SerializeObject(allSubjects.Except(subjectsToRemove));
+            await connection.Database.StringSetAsync(SUBJECT + subjectId, serTokens);
+        }
+
+        public async Task<PersistedGrant> GetByKeyAsync(string key)
+        {
+            PersistedGrant result = null;
+
+            var value = await connection.Database.StringGetAsync(TOKEN + key);
+            if(value.HasValue)
+            {
+                result = JsonConvert.DeserializeObject<PersistedGrant>(value);
+            }
+
+            return result;
+        }
+
+        public async Task<IEnumerable<PersistedGrant>> GetBySubjectAsync(string subject)
+        {
+            List<PersistedGrant> result = new List<PersistedGrant>();
+
+            var value = await connection.Database.StringGetAsync(SUBJECT + subject);
+            if (value.HasValue)
+            {
+                result.AddRange(JsonConvert.DeserializeObject<PersistedGrant[]>(value));
+            }
+
+            return result;
         }
     }
 }
