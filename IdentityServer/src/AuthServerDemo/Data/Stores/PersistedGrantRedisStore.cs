@@ -16,70 +16,41 @@ namespace AuthServerDemo.Data.Stores
             this.Tokens = tokenConnections;
         }
 
-        public Task StoreAsync(PersistedGrant grant)
+        public async Task StoreAsync(PersistedGrant grant)
         {
-            Tokens.Add(grant);
-
-            return Task.FromResult(0);
+            await Tokens.AddAsync(grant);
         }
 
-        public Task<PersistedGrant> GetAsync(string key)
+        public async Task<PersistedGrant> GetAsync(string key)
         {
             try
             {
-                return Task.FromResult(Tokens.GetByKey(key));
+                return await Tokens.GetByKeyAsync(key);
             }
             catch
             {
-                return Task.FromResult<PersistedGrant>(null);
+                return await Task.FromResult<PersistedGrant>(null);
             }
         }
 
-        public Task<IEnumerable<PersistedGrant>> GetAllAsync(string subjectId)
+        public async Task<IEnumerable<PersistedGrant>> GetAllAsync(string subjectId)
         {
-            return Task.FromResult(Tokens.GetBySubject(subjectId));
+            return await Tokens.GetBySubjectAsync(subjectId);
         }
 
-        public Task RemoveAsync(string key)
+        public async Task RemoveAsync(string key)
         {
-            return Task.FromResult(0);
+            await this.Tokens.RemoveAsync(key);
         }
 
-        public Task RemoveAllAsync(string subjectId, string clientId)
+        public async Task RemoveAllAsync(string subjectId, string clientId)
         {
-            var query =
-                from item in _repository
-                where item.Value.ClientId == clientId &&
-                    item.Value.SubjectId == subjectId
-                select item.Key;
-
-            var keys = query.ToArray();
-            foreach (var key in keys)
-            {
-                PersistedGrant grant;
-                _repository.TryRemove(key, out grant);
-            }
-
-            return Task.FromResult(0);
+            await this.Tokens.RemoveAsync(subjectId, clientId, null);
         }
 
-        public Task RemoveAllAsync(string subjectId, string clientId, string type)
+        public async Task RemoveAllAsync(string subjectId, string clientId, string type)
         {
-            var query =
-                from item in _repository
-                where item.Value.SubjectId == subjectId &&
-                    item.Value.ClientId == clientId &&
-                    item.Value.Type == type
-                select item.Key;
-
-            var keys = query.ToArray();
-            foreach (var key in keys)
-            {
-                PersistedGrant grant;
-                _repository.TryRemove(key, out grant);
-            }
-
-            return Task.FromResult(0);
+            await this.Tokens.RemoveAsync(subjectId, clientId, type);
         }
     }
 }
