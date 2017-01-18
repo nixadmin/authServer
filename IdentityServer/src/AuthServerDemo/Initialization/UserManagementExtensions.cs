@@ -11,9 +11,9 @@ namespace AuthServerDemo.Initialization
     {
         public static IIdentityServerBuilder ManageApplicationUsers(this IIdentityServerBuilder builder)
         {
-            builder.Services.AddSingleton<IInMemoryApplicationUserStore, InMemoryApplicationUserStore>();// .AddSingleton(new InMemoryApplicationUserStore());
-            builder.AddProfileService<InMemoryUsersProfileService>();
-            builder.AddResourceOwnerValidator<InMemoryUsersPasswordValidator>();
+            builder.Services.AddSingleton<IApplicationUserStore, ApplicationUserStore>();// .AddSingleton(new InMemoryApplicationUserStore());
+            builder.AddProfileService<ApplicationUserProfileService>();
+            builder.AddResourceOwnerValidator<ApplicationUserPasswordValidator>();
 
             return builder;
         }

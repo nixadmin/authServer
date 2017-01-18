@@ -19,12 +19,19 @@ using AuthServerDemo.Configuration.Settings;
 using IdentityModel;
 using IdentityServer4;
 using IdentityServer4.Validation;
+using AuthServerDemo.Data.Repository;
+using IdentityServer4.Stores;
+using AuthServerDemo.Data.Stores;
+using System.Security.Cryptography.X509Certificates;
+using System.IO;
 
 namespace AuthServerDemo
 {
     public class Startup
     {
         public IConfiguration Configuration { get; }
+
+        private readonly IHostingEnvironment environment;
 
         public Startup(IHostingEnvironment env)
         {
@@ -34,11 +41,17 @@ namespace AuthServerDemo
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
 
+            environment = env;
+
             Configuration = builder.Build();
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            var cert = new X509Certificate2(
+                Path.Combine(environment.ContentRootPath, Configuration.GetSection("Hosting:CertName").Value), 
+                Configuration.GetSection("Hosting:CertPassword").Value);
+
             var connectionString = Configuration.GetConnectionString(Configuration.GetDatabaseConnectionStringName());
             // var migrationAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
@@ -63,14 +76,19 @@ namespace AuthServerDemo
 
             services.AddMvc();
 
-            //services.AddTransient<IProfileService, IdentityProfileService>();
-            services.AddTransient<IProfileService, InMemoryUsersProfileService>();
-            services.AddTransient<IResourceOwnerPasswordValidator, InMemoryUsersPasswordValidator>();
+            services.AddTransient<IProfileService, ApplicationUserProfileService>();
+            services.AddTransient<IResourceOwnerPasswordValidator, ApplicationUserPasswordValidator>();
+
+            // registration for redis connection
+
+            services.AddSingleton(new RedisConnection(Configuration.GetSection("Redis:Host").Value));
+            services.AddTransient<IApplicationUserRepository, ApplicationUserRedisRepository>();
+            services.AddTransient<IGrantRepository, GrantRedisRepository>();
+
+            services.AddTransient<IPersistedGrantStore, PersistedGrantRedisStore>();
 
             services.AddIdentityServer()
-                .AddTemporarySigningCredential()
-
-                .AddInMemoryPersistedGrants()
+                .AddSigningCredential(cert)
                 .AddInMemoryIdentityResources(FakeDataConfig.GetIdentityResources())
                 .AddInMemoryApiResources(FakeDataConfig.GetApiResources())
                 .AddInMemoryClients(FakeDataConfig.GetClients())

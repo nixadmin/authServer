@@ -17,18 +17,23 @@ namespace AuthServerDemo.Controllers
     public class UserProfileController : Controller
     {
         private readonly UserManager<ApplicationUser> userManager;
-        private readonly IInMemoryApplicationUserStore inMemoryUsers;
+        private readonly IApplicationUserStore inMemoryUsers;
 
-        public UserProfileController(UserManager<ApplicationUser> identityUserManager, IInMemoryApplicationUserStore inMemoryStore)
+        public UserProfileController(UserManager<ApplicationUser> identityUserManager, IApplicationUserStore inMemoryStore)
         {
             userManager = identityUserManager;
             inMemoryUsers = inMemoryStore;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet]
         public IActionResult Get(string email)
         {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return BadRequest();
+            }
+
             try
             {
                 //var users = userManager.Users.AsQueryable().Where(ApplicationUserQueries.GetUserWithRoleRestrictionsQuery(User, email)
@@ -49,7 +54,7 @@ namespace AuthServerDemo.Controllers
             }
         }
 
-        [Authorize(Roles.Admin)]
+        //[Authorize(Roles.Admin)]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody]UserRegisterModel model)
         {
@@ -70,7 +75,7 @@ namespace AuthServerDemo.Controllers
                 if (result.Succeeded)
                 {
                     var createdUser = userManager.Users.First(q => q.UserName == user.UserName);
-                    inMemoryUsers.Users.Add(createdUser);
+                    inMemoryUsers.UsersRepository.Add(createdUser);
                     return Ok(model);
                 }
             }
@@ -78,7 +83,7 @@ namespace AuthServerDemo.Controllers
             return BadRequest(ModelState);
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPut]
         public async Task<IActionResult> Update(string email, [FromBody]UserProfileModel model)
         {
@@ -110,7 +115,7 @@ namespace AuthServerDemo.Controllers
             return BadRequest(ModelState);
         }
 
-        [Authorize(Roles.Admin)]
+        //[Authorize(Roles.Admin)]
         [HttpDelete]
         public async Task<IActionResult> Delete(string email)
         {

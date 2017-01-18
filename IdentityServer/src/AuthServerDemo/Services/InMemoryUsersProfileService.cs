@@ -13,11 +13,11 @@ using IdentityServer4;
 
 namespace AuthServerDemo.Services
 {
-    public class InMemoryUsersProfileService : IProfileService
+    public class ApplicationUserProfileService : IProfileService
     {
-        private IInMemoryApplicationUserStore users { get; set; }
+        private IApplicationUserStore users { get; set; }
 
-        public InMemoryUsersProfileService(IInMemoryApplicationUserStore usersStore)
+        public ApplicationUserProfileService(IApplicationUserStore usersStore)
         {
             this.users = usersStore;
         }

@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace AuthServerDemo.Services
 {
-    public class InMemoryUsersPasswordValidator : IResourceOwnerPasswordValidator
+    public class ApplicationUserPasswordValidator : IResourceOwnerPasswordValidator
     {
-        private IInMemoryApplicationUserStore users { get; set; }
+        private IApplicationUserStore users { get; set; }
 
-        public InMemoryUsersPasswordValidator(IInMemoryApplicationUserStore usersStore)
+        public ApplicationUserPasswordValidator(IApplicationUserStore usersStore)
         {
             this.users = usersStore;
         }
