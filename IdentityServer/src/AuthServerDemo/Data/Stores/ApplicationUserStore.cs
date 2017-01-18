@@ -22,11 +22,9 @@ namespace AuthServerDemo.Data.Stores
 
         public IApplicationUserRepository UsersRepository { get; private set; }
 
-        public ApplicationUserStore(UserManager<ApplicationUser> identityUserSotore, IPasswordHasher<ApplicationUser> passwordHasher, IApplicationUserRepository repo)
+        public ApplicationUserStore(IPasswordHasher<ApplicationUser> passwordHasher, IApplicationUserRepository repo)
         {
             this.UsersRepository = repo;
-            this.UsersRepository.AddRangeAsync(identityUserSotore.Users).Wait();
-
             this.PasswordHasher = passwordHasher;            
         }
 

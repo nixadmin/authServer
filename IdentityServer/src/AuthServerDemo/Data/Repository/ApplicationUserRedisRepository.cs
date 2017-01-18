@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace AuthServerDemo.Data.Repository
 {
@@ -28,9 +29,11 @@ namespace AuthServerDemo.Data.Repository
 
         private RedisConnection connection;
 
-        public ApplicationUserRedisRepository(RedisConnection redisCconnection)
+        public ApplicationUserRedisRepository(RedisConnection redisCconnection, UserManager<ApplicationUser> identityUserSotore)
         {
             connection = redisCconnection;
+
+            this.AddRangeAsync(identityUserSotore.Users).Wait();
         }
 
         public async Task AddAsync(ApplicationUser user)
