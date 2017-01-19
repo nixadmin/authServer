@@ -50,10 +50,10 @@ namespace AuthServerDemo
         {
             var cert = new X509Certificate2(
                 Path.Combine(environment.ContentRootPath, Configuration.GetSection("Hosting:CertName").Value), 
-                Configuration.GetSection("Hosting:CertPassword").Value);
+                                Configuration.GetSection("Hosting:CertPassword").Value);
 
             var connectionString = Configuration.GetConnectionString(Configuration.GetDatabaseConnectionStringName());
-            // var migrationAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+            var migrationAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
             services.AddIdentity<ApplicationUser, ApplicationRole>()
                 .AddEntityFrameworkStores<AuthorizationServerDbContext, int>()
