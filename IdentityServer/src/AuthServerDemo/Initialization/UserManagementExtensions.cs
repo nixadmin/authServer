@@ -17,17 +17,5 @@ namespace AuthServerDemo.Initialization
 
             return builder;
         }
-
-        //public static void InitializeInMemoryStore(this IApplicationBuilder app)
-        //{
-        //    using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-        //    {
-        //        var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        //        serviceScope
-        //            .ServiceProvider
-        //            .GetRequiredService<InMemoryApplicationUserStore>()
-        //            .Init(userManager);
-        //    }
-        //}
     }
 }
