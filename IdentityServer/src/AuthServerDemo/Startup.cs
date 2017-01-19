@@ -102,7 +102,6 @@ namespace AuthServerDemo
                 //        options.MigrationsAssembly(migrationAssembly)))
 
                 .ManageApplicationUsers();
-               // .AddTestUsers(FakeDataConfig.GetUsers());
                 
                 //.AddAspNetIdentity<ApplicationUser>()
                 //.AddProfileService<IdentityProfileService>();
