@@ -9,6 +9,8 @@ using AuthServerDemo.Configuration;
 using AuthServerDemo.Data;
 using System;
 using AuthServerDemo.Data.Stores;
+using System.Security.Claims;
+using IdentityServer4;
 
 namespace AuthServerDemo.Controllers
 {
@@ -29,16 +31,9 @@ namespace AuthServerDemo.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(string email)
         {
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                return BadRequest();
-            }
-
             try
-            {
-                //var users = userManager.Users.AsQueryable().Where(ApplicationUserQueries.GetUserWithRoleRestrictionsQuery(User, email)
-                // var users = inMemoryUsers.GetUsersByExpression(ApplicationUserQueries.GetUserWithRoleRestrictionsQueryDictionary(User, email));
-                var user = await inMemoryUsers.FindByUsernameAsync(email);
+            {          
+                var user = await inMemoryUsers.FindByUsernameAsync(EmailToSearch(User, email));
                 return Ok(new
                             {
                                 Email = user.Email,
@@ -54,7 +49,7 @@ namespace AuthServerDemo.Controllers
             }
         }
 
-        //[Authorize(Roles.Admin)]
+        [Authorize(Roles.Admin)]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody]UserRegisterModel model)
         {
@@ -139,6 +134,27 @@ namespace AuthServerDemo.Controllers
             }
 
             return BadRequest();
+        }
+
+        private string EmailToSearch(ClaimsPrincipal user, string email)
+        {
+            string userEmail = User.Claims.FirstOrDefault(c => c.Type == IdentityServerConstants.StandardScopes.Email).Value;
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return userEmail;
+            }
+            else
+            {
+                if (User.IsInRole(Roles.Admin) || (userEmail == email))
+                {
+                    return email;
+                }
+                else
+                {
+                    throw new InvalidOperationException();
+                }
+            }
         }
     }
 }
