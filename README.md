@@ -39,3 +39,38 @@ dotnet run   // will start solution on http://localhost:5000
 ```
 * Open in web browser http://localhost:5000/.well-known/openid-configuration and you should be able to see discovery document
 * More information and samples about IdentityServer4 you can find here: http://docs.identityserver.io/en/release
+
+* Now you should be able to add user:
+```JSON 
+POST http://localhost:5000/api/profile
+{
+	"Email": "",
+	"password": "",
+	"IsAdmin": true,
+	"FirstName": "",
+	"LastName": "",
+	"address": ""
+}
+```
+* If user was created you shoulb be able to get token
+```JSON
+POST http://localhost:5000/connect/token
+HEADERS
+Content-Type:application/x-www-form-urlencoded
+Accept:application/json
+BODY
+client_id:demo
+grant_type:password
+username:<Email>
+password:<password>
+client_secret:secret
+scope:users
+```
+* And now validate token
+```JSON
+POST /connect/introspect
+HEADERS
+Authorization: Basic xxxyyy
+BODY
+token=<token>
+```
