@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -22,8 +21,6 @@ using IdentityServer4.Validation;
 using AuthServerDemo.Data.Repository;
 using IdentityServer4.Stores;
 using AuthServerDemo.Data.Stores;
-using System.Security.Cryptography.X509Certificates;
-using System.IO;
 
 namespace AuthServerDemo
 {
@@ -48,10 +45,6 @@ namespace AuthServerDemo
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var cert = new X509Certificate2(
-                Path.Combine(environment.ContentRootPath, Configuration.GetSection("Hosting:CertName").Value), 
-                                Configuration.GetSection("Hosting:CertPassword").Value);
-
             var connectionString = Configuration.GetConnectionString(Configuration.GetDatabaseConnectionStringName());
             var migrationAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
@@ -79,8 +72,6 @@ namespace AuthServerDemo
             services.AddTransient<IProfileService, ApplicationUserProfileService>();
             services.AddTransient<IResourceOwnerPasswordValidator, ApplicationUserPasswordValidator>();
 
-            // registration for redis connection
-
             services.AddSingleton(new RedisConnection(Configuration.GetSection("Redis:Host").Value));
             services.AddTransient<IApplicationUserRepository, ApplicationUserRedisRepository>();
             services.AddTransient<IGrantRepository, GrantRedisRepository>();
@@ -88,23 +79,11 @@ namespace AuthServerDemo
             services.AddTransient<IPersistedGrantStore, PersistedGrantRedisStore>();
 
             services.AddIdentityServer()
-                .AddSigningCredential(cert)
+                .AddTemporarySigningCredential()
                 .AddInMemoryIdentityResources(FakeDataConfig.GetIdentityResources())
                 .AddInMemoryApiResources(FakeDataConfig.GetApiResources())
                 .AddInMemoryClients(FakeDataConfig.GetClients())
-
-                //.AddConfigurationStore(builder =>
-                //    builder.UseNpgsql(connectionString, options =>
-                //        options.MigrationsAssembly(migrationAssembly)))
-
-                //.AddOperationalStore(builder =>
-                //    builder.UseNpgsql(connectionString, options =>
-                //        options.MigrationsAssembly(migrationAssembly)))
-
                 .ManageApplicationUsers();
-                
-                //.AddAspNetIdentity<ApplicationUser>()
-                //.AddProfileService<IdentityProfileService>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -125,8 +104,6 @@ namespace AuthServerDemo
 
             app.UseIdentity();
             app.UseIdentityServer();
-
-            //app.InitializeInMemoryStore();
 
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
