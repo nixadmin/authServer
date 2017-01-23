@@ -34,3 +34,23 @@ Authorization:Basic dXNlcnM6c2VjcmV0
 BODY
 token:<token>
 ```
+
+* As far as you have valid token with admin rights you can add new user
+
+```JSON
+POST http://localhost:5000/api/profile
+HEADERS
+Content-Type:application/json
+Authorization:Bearer <token>
+BODY
+{
+	"email": "<email>",
+	"password": "<password>",
+	"firstname": "<f_name>",
+	"lastname": "<l_name>",
+	"address": "<address>",
+	"isAdmin": true
+}
+```
+
+* After new user is create you can try to get new token for new createt user
